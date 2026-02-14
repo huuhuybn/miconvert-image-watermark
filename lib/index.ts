@@ -77,9 +77,9 @@ export async function addWatermark(
         }
 
         if (mode === 'tiled') {
-            drawTiledText(ctx, canvas, options);
+            await drawTiledText(ctx, canvas, options);
         } else {
-            drawTextWatermark(ctx, canvas, options);
+            await drawTextWatermark(ctx, canvas, options);
         }
     } else if (options.type === 'image') {
         if (!options.source && !options.imageElement) {
@@ -117,6 +117,10 @@ export type {
     FontWeight,
     FontStyle,
 } from './types';
+
+// Re-export font utilities for advanced usage
+export { loadGoogleFont, loadCustomFont, detectScript, ensureFontForText } from './font-loader';
+export type { ScriptInfo } from './font-loader';
 
 // Default export
 export default addWatermark;

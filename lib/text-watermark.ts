@@ -1,23 +1,26 @@
 /**
  * @miconvert/image-watermark
  * Text watermark renderer — handles fonts, stroke, shadow, and responsive scaling.
+ * Automatically loads the correct font for the text's language/script.
  */
 
 import { TextWatermarkOptions } from './types';
 import { degreesToRadians, getResponsiveMultiplier } from './utils';
 import { calculatePosition } from './position';
+import { ensureFontForText } from './font-loader';
 
 /**
  * Measure and draw a text watermark at the specified position on the canvas.
+ * Automatically detects the text script and loads a matching Google Noto font.
  */
-export function drawTextWatermark(
+export async function drawTextWatermark(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     options: TextWatermarkOptions
-): void {
+): Promise<void> {
     const {
         text,
-        fontFamily = 'Arial, Helvetica, sans-serif',
+        fontFamily: userFontFamily,
         fontSize = 48,
         fontWeight = 'bold',
         fontStyle = 'normal',
@@ -37,6 +40,13 @@ export function drawTextWatermark(
         scale,
     } = options;
 
+    // Auto-load the best font for the text's language
+    const resolvedFontFamily = await ensureFontForText(
+        text,
+        userFontFamily,
+        String(fontWeight === 'bold' ? '700' : '400')
+    );
+
     ctx.save();
 
     // Responsive font size
@@ -44,7 +54,7 @@ export function drawTextWatermark(
     const scaledFontSize = Math.max(12, Math.round(fontSize * multiplier));
 
     // Set font
-    ctx.font = `${fontStyle} ${fontWeight} ${scaledFontSize}px ${fontFamily}`;
+    ctx.font = `${fontStyle} ${fontWeight} ${scaledFontSize}px ${resolvedFontFamily}`;
 
     // Measure text
     const metrics = ctx.measureText(text);

@@ -6,19 +6,20 @@
 
 import { TextWatermarkOptions, ImageWatermarkOptions } from './types';
 import { degreesToRadians, getResponsiveMultiplier, resolveImage } from './utils';
+import { ensureFontForText } from './font-loader';
 
 /**
  * Draw a tiled text watermark pattern across the entire canvas.
  * Each tile is rotated and spaced evenly in a grid pattern.
  */
-export function drawTiledText(
+export async function drawTiledText(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     options: TextWatermarkOptions
-): void {
+): Promise<void> {
     const {
         text,
-        fontFamily = 'Arial, Helvetica, sans-serif',
+        fontFamily: userFontFamily,
         fontSize = 48,
         fontWeight = 'bold',
         fontStyle = 'normal',
@@ -36,6 +37,13 @@ export function drawTiledText(
         scale,
     } = options;
 
+    // Auto-load the best font for the text's language
+    const resolvedFontFamily = await ensureFontForText(
+        text,
+        userFontFamily,
+        String(fontWeight === 'bold' ? '700' : '400')
+    );
+
     ctx.save();
 
     // Responsive font size
@@ -44,7 +52,7 @@ export function drawTiledText(
     const scaledSpacingX = tileSpacingX * multiplier;
     const scaledSpacingY = tileSpacingY * multiplier;
 
-    ctx.font = `${fontStyle} ${fontWeight} ${scaledFontSize}px ${fontFamily}`;
+    ctx.font = `${fontStyle} ${fontWeight} ${scaledFontSize}px ${resolvedFontFamily}`;
     ctx.globalAlpha = opacity;
 
     // Measure one tile

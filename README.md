@@ -14,6 +14,7 @@
 - **Tiled Pattern Mode** — Repeat watermark across entire image (anti-crop protection, like Shutterstock)
 - **Responsive Scaling** — Logo/text auto-scales based on image resolution (no more tiny watermarks on 4K images)
 - **Rotation & Opacity** — Full control over angle and transparency
+- **🌍 Multilingual Font Auto-Loading** — Auto-detects script (CJK, Arabic, Thai, Vietnamese, Cyrillic, Devanagari...) and loads the correct [Google Noto font](https://fonts.google.com/noto). No more □□□ tofu boxes!
 - **100% Client-Side** — Uses HTML5 Canvas, no server required
 - **TypeScript** — Full type definitions included
 
@@ -135,9 +136,44 @@ const watermarked = await addWatermark(imageFile, {
 └─────────────┴─────────────┴─────────────┘
 ```
 
+## 🌍 Multilingual Font Support
+
+Text watermarks automatically detect the language/script of your text and load the correct **Google Noto font** via the FontFace API. No manual font configuration needed!
+
+| Script | Languages | Auto-loaded Font |
+|--------|-----------|-----------------|
+| CJK (Simplified Chinese) | Chinese | Noto Sans SC |
+| Japanese | Japanese | Noto Sans JP |
+| Korean | Korean | Noto Sans KR |
+| Arabic | Arabic, Persian, Urdu | Noto Sans Arabic |
+| Devanagari | Hindi, Sanskrit, Marathi | Noto Sans Devanagari |
+| Bengali | Bengali, Assamese | Noto Sans Bengali |
+| Thai | Thai | Noto Sans Thai |
+| Vietnamese | Vietnamese | Noto Sans |
+| Cyrillic | Russian, Ukrainian | Noto Sans |
+| Hebrew | Hebrew | Noto Sans Hebrew |
+| Tamil | Tamil | Noto Sans Tamil |
+| Latin | English, European | Noto Sans |
+
+### Custom Font Loading
+
+```js
+import { loadCustomFont, addWatermark } from '@miconvert/image-watermark';
+
+// Load a custom font from URL
+await loadCustomFont('MyBrand', 'https://example.com/fonts/mybrand.woff2');
+
+const result = await addWatermark(imageFile, {
+  type: 'text',
+  text: 'My Brand™',
+  fontFamily: 'MyBrand',
+  // ...other options
+});
+```
+
 ## 🌐 Browser Support
 
-Works in all modern browsers that support `HTMLCanvasElement.toBlob()`:
+Works in all modern browsers that support `HTMLCanvasElement.toBlob()` and `FontFace` API:
 Chrome 50+, Firefox 19+, Safari 11+, Edge 79+
 
 ## 🤝 Support
