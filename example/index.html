@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@miconvert/image-watermark — Interactive Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f0f1a;
+            --surface: rgba(255,255,255,0.05);
+            --surface-hover: rgba(255,255,255,0.08);
+            --border: rgba(255,255,255,0.1);
+            --text: #e4e4ef;
+            --text-muted: #8888aa;
+            --accent: #6c5ce7;
+            --accent-glow: rgba(108,92,231,0.3);
+            --success: #00cec9;
+            --danger: #ff6b6b;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 3rem 0 2rem;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe, #00cec9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 860px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Panel */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .panel h2 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+        }
+
+        /* Controls */
+        .control-group {
+            margin-bottom: 1rem;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+        }
+        .control-group input[type="text"],
+        .control-group input[type="number"],
+        .control-group input[type="color"],
+        .control-group select {
+            width: 100%;
+            padding: 0.55rem 0.8rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .control-group input:focus,
+        .control-group select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+        .range-value {
+            float: right;
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        /* File upload */
+        .file-upload {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+        }
+        .file-upload:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+        .file-upload.has-file {
+            border-color: var(--success);
+            border-style: solid;
+        }
+        .file-upload input { display: none; }
+        .file-upload .icon { font-size: 2rem; margin-bottom: 0.3rem; }
+        .file-upload .label { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px var(--accent-glow);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: var(--surface-hover);
+            color: var(--text);
+            border: 1px solid var(--border);
+            margin-top: 0.5rem;
+        }
+
+        /* Preview */
+        .preview-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            position: relative;
+        }
+        .preview-area img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .placeholder-text {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Toggle */
+        .toggle-row {
+            display: flex;
+            gap: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+        .toggle-btn {
+            flex: 1;
+            padding: 0.6rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .toggle-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.2rem 0;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Status */
+        .status {
+            margin-top: 1rem;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status.success { background: rgba(0,206,201,0.15); color: var(--success); }
+        .status.error { background: rgba(255,107,107,0.15); color: var(--danger); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>@miconvert/image-watermark</h1>
+            <p>Add text or logo watermark to images — right in your browser</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Controls Panel -->
+            <div class="panel">
+                <h2>📷 Source Image</h2>
+                <div class="file-upload" id="sourceUpload" onclick="document.getElementById('sourceFile').click()">
+                    <input type="file" id="sourceFile" accept="image/*">
+                    <div class="icon">📁</div>
+                    <div class="label">Click to select image</div>
+                </div>
+
+                <h2>🎨 Watermark Type</h2>
+                <div class="toggle-row">
+                    <button class="toggle-btn active" data-type="text" onclick="setType('text')">✍️ Text</button>
+                    <button class="toggle-btn" data-type="image" onclick="setType('image')">🖼️ Logo</button>
+                </div>
+
+                <!-- Text options -->
+                <div id="textOptions">
+                    <div class="control-group">
+                        <label>Text Content</label>
+                        <input type="text" id="wmText" value="© Miconvert Property">
+                    </div>
+                    <div class="row-2">
+                        <div class="control-group">
+                            <label>Font Size</label>
+                            <input type="number" id="wmFontSize" value="48" min="10" max="200">
+                        </div>
+                        <div class="control-group">
+                            <label>Font Family</label>
+                            <select id="wmFontFamily">
+                                <option value="Arial, Helvetica, sans-serif">Arial</option>
+                                <option value="Georgia, serif">Georgia</option>
+                                <option value="'Courier New', monospace">Courier New</option>
+                                <option value="Verdana, sans-serif">Verdana</option>
+                                <option value="Impact, sans-serif">Impact</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row-2">
+                        <div class="control-group">
+                            <label>Text Color</label>
+                            <input type="color" id="wmColor" value="#ffffff">
+                        </div>
+                        <div class="control-group">
+                            <label>Stroke Color</label>
+                            <input type="color" id="wmStrokeColor" value="#000000">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Stroke Width <span class="range-value" id="strokeWidthVal">2</span></label>
+                        <input type="range" id="wmStrokeWidth" min="0" max="10" value="2" oninput="document.getElementById('strokeWidthVal').textContent=this.value">
+                    </div>
+                </div>
+
+                <!-- Image options -->
+                <div id="imageOptions" class="hidden">
+                    <div class="file-upload" id="logoUpload" onclick="document.getElementById('logoFile').click()">
+                        <input type="file" id="logoFile" accept="image/*">
+                        <div class="icon">🏷️</div>
+                        <div class="label">Click to select logo</div>
+                    </div>
+                    <div class="control-group">
+                        <label>Logo Width (% of image) <span class="range-value" id="logoWidthVal">15%</span></label>
+                        <input type="range" id="wmLogoWidth" min="5" max="50" value="15" oninput="document.getElementById('logoWidthVal').textContent=this.value+'%'">
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <h2>⚙️ Position & Effects</h2>
+                <div class="control-group">
+                    <label>Position</label>
+                    <select id="wmPosition">
+                        <option value="bottom-right">↘ Bottom Right</option>
+                        <option value="bottom-center">⬇ Bottom Center</option>
+                        <option value="bottom-left">↙ Bottom Left</option>
+                        <option value="center">⏺ Center</option>
+                        <option value="center-right">➡ Center Right</option>
+                        <option value="center-left">⬅ Center Left</option>
+                        <option value="top-right">↗ Top Right</option>
+                        <option value="top-center">⬆ Top Center</option>
+                        <option value="top-left">↖ Top Left</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Mode</label>
+                    <select id="wmMode">
+                        <option value="single">Single</option>
+                        <option value="tiled">Tiled (Anti-crop)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Opacity <span class="range-value" id="opacityVal">0.5</span></label>
+                    <input type="range" id="wmOpacity" min="0" max="100" value="50" oninput="document.getElementById('opacityVal').textContent=(this.value/100).toFixed(2)">
+                </div>
+
+                <div class="row-2">
+                    <div class="control-group">
+                        <label>Rotation (°)</label>
+                        <input type="number" id="wmRotate" value="0" min="-180" max="180">
+                    </div>
+                    <div class="control-group">
+                        <label>Padding (px)</label>
+                        <input type="number" id="wmPadding" value="20" min="0" max="200">
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <button class="btn btn-primary" id="applyBtn" onclick="applyWatermark()" disabled>
+                    ✨ Apply Watermark
+                </button>
+                <button class="btn btn-secondary" id="downloadBtn" onclick="downloadResult()" style="display:none">
+                    💾 Download Result
+                </button>
+
+                <div id="statusMsg" class="status hidden"></div>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="panel">
+                <h2>👁️ Preview</h2>
+                <div class="preview-area">
+                    <span class="placeholder-text" id="placeholderText">Select an image to get started</span>
+                    <img id="previewImg" style="display:none">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { addWatermark } from '../dist/image-watermark.mjs';
+
+        let sourceFile = null;
+        let logoFile = null;
+        let resultBlob = null;
+        let currentType = 'text';
+
+        // --- File uploads ---
+        document.getElementById('sourceFile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            sourceFile = file;
+
+            const upload = document.getElementById('sourceUpload');
+            upload.classList.add('has-file');
+            upload.querySelector('.label').textContent = file.name;
+
+            // Show original preview
+            const url = URL.createObjectURL(file);
+            const img = document.getElementById('previewImg');
+            img.src = url;
+            img.style.display = 'block';
+            document.getElementById('placeholderText').style.display = 'none';
+            document.getElementById('applyBtn').disabled = false;
+
+            hideStatus();
+        });
+
+        document.getElementById('logoFile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            logoFile = file;
+
+            const upload = document.getElementById('logoUpload');
+            upload.classList.add('has-file');
+            upload.querySelector('.label').textContent = file.name;
+        });
+
+        // --- Type toggle ---
+        window.setType = function(type) {
+            currentType = type;
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            document.getElementById('textOptions').classList.toggle('hidden', type !== 'text');
+            document.getElementById('imageOptions').classList.toggle('hidden', type !== 'image');
+        };
+
+        // --- Apply ---
+        window.applyWatermark = async function() {
+            if (!sourceFile) return;
+
+            const btn = document.getElementById('applyBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Processing...';
+            hideStatus();
+
+            try {
+                let options;
+
+                if (currentType === 'text') {
+                    options = {
+                        type: 'text',
+                        text: document.getElementById('wmText').value,
+                        fontSize: parseInt(document.getElementById('wmFontSize').value),
+                        fontFamily: document.getElementById('wmFontFamily').value,
+                        color: document.getElementById('wmColor').value,
+                        strokeColor: document.getElementById('wmStrokeColor').value,
+                        strokeWidth: parseInt(document.getElementById('wmStrokeWidth').value),
+                        position: document.getElementById('wmPosition').value,
+                        mode: document.getElementById('wmMode').value,
+                        opacity: parseInt(document.getElementById('wmOpacity').value) / 100,
+                        rotate: parseInt(document.getElementById('wmRotate').value),
+                        padding: parseInt(document.getElementById('wmPadding').value),
+                    };
+                } else {
+                    if (!logoFile) {
+                        showStatus('Please select a logo image first.', 'error');
+                        btn.disabled = false;
+                        btn.textContent = '✨ Apply Watermark';
+                        return;
+                    }
+                    options = {
+                        type: 'image',
+                        imageElement: logoFile,
+                        width: parseInt(document.getElementById('wmLogoWidth').value) / 100,
+                        position: document.getElementById('wmPosition').value,
+                        mode: document.getElementById('wmMode').value,
+                        opacity: parseInt(document.getElementById('wmOpacity').value) / 100,
+                        rotate: parseInt(document.getElementById('wmRotate').value),
+                        padding: parseInt(document.getElementById('wmPadding').value),
+                    };
+                }
+
+                const t0 = performance.now();
+                resultBlob = await addWatermark(sourceFile, options);
+                const elapsed = (performance.now() - t0).toFixed(0);
+
+                // Show result
+                const url = URL.createObjectURL(resultBlob);
+                const img = document.getElementById('previewImg');
+                img.src = url;
+
+                const sizeMB = (resultBlob.size / 1024 / 1024).toFixed(2);
+                showStatus(`Done in ${elapsed}ms — ${sizeMB} MB`, 'success');
+                document.getElementById('downloadBtn').style.display = '';
+            } catch (err) {
+                showStatus('Error: ' + err.message, 'error');
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✨ Apply Watermark';
+            }
+        };
+
+        // --- Download ---
+        window.downloadResult = function() {
+            if (!resultBlob) return;
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(resultBlob);
+            a.download = 'watermarked-' + (sourceFile?.name || 'image.png');
+            a.click();
+        };
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.className = `status ${type}`;
+            el.classList.remove('hidden');
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMsg').classList.add('hidden');
+            document.getElementById('downloadBtn').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{
+  "name": "@miconvert/image-watermark",
+  "version": "1.0.0",
+  "description": "Add text or logo watermark to images in the browser. Client-side, fast, beautiful — no server needed. Supports tiled patterns, 9-point positioning, responsive scaling, and full opacity/rotation control.",
+  "main": "dist/image-watermark.js",
+  "module": "dist/image-watermark.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "watermark",
+    "image watermark",
+    "add text to image",
+    "add logo to image",
+    "canvas watermark",
+    "client-side watermark",
+    "browser image processing",
+    "copyright protection",
+    "photo branding",
+    "e-commerce image tool",
+    "tiled watermark",
+    "image copyright",
+    "stock photo watermark",
+    "miconvert"
+  ],
+  "author": "Miconvert <contact@miconvert.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huuhuybn/miconvert-image-watermark.git"
+  },
+  "homepage": "https://miconvert.com",
+  "bugs": {
+    "url": "https://miconvert.com/en/contact"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.0",
+    "rollup": "^4.0.0",
+    "tslib": "^2.6.0",
+    "typescript": "^5.3.0"
+  }
+}
