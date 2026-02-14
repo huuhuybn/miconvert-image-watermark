@@ -177,6 +177,8 @@ const result = await addWatermark(imageFile, {
 - **iOS Safari limit** — Images larger than ~16.7 megapixels are automatically downscaled to prevent Safari crashes. A console warning is logged when this happens.
 - **SSR / Node.js** — This library requires a browser environment (DOM + Canvas). In Next.js/Nuxt, use `dynamic import()` or check `typeof window !== 'undefined'` before importing.
 - **Multiline text** — Use `\n` in your text string for multi-line watermarks. Example: `text: '© Company\nAll Rights Reserved'`
+- **Animated GIF** — Only the first frame is watermarked. Canvas API does not support multi-frame GIF rendering.
+- **AVIF output** — When using `outputType: 'image/avif'`, color quality depends on your browser's AVIF encoder. Chrome 121+ and Safari 17+ produce good results.
 
 ## 🌐 Browser Support
 
