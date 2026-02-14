@@ -120,6 +120,12 @@ export interface TextWatermarkOptions extends WatermarkBaseOptions {
 
     /** Shadow vertical offset. Default: 2 */
     shadowOffsetY?: number;
+
+    /**
+     * Line height in pixels for multiline text (text containing \n).
+     * Default: fontSize × 1.3
+     */
+    lineHeight?: number;
 }
 
 /**

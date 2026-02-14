@@ -171,6 +171,13 @@ const result = await addWatermark(imageFile, {
 });
 ```
 
+## ⚠️ Important Notes
+
+- **EXIF metadata is lost** — Canvas processing strips EXIF data (GPS, camera info, orientation). Modern browsers auto-apply EXIF orientation before drawing, so images will look correct, but the metadata is not preserved in the output.
+- **iOS Safari limit** — Images larger than ~16.7 megapixels are automatically downscaled to prevent Safari crashes. A console warning is logged when this happens.
+- **SSR / Node.js** — This library requires a browser environment (DOM + Canvas). In Next.js/Nuxt, use `dynamic import()` or check `typeof window !== 'undefined'` before importing.
+- **Multiline text** — Use `\n` in your text string for multi-line watermarks. Example: `text: '© Company\nAll Rights Reserved'`
+
 ## 🌐 Browser Support
 
 Works in all modern browsers that support `HTMLCanvasElement.toBlob()` and `FontFace` API:

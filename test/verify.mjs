@@ -300,6 +300,68 @@ test('README has tiled example', () => {
     assert(readme.includes("mode: 'tiled'"), 'Missing tiled example in README');
 });
 
+// --- 9. Audit Fix Verification ---
+console.log('\n🔧 Audit Fix Checks:');
+
+// Fix #5: iOS Canvas Size Guard
+test('Bundle has iOS canvas size limit constant (16777216)', () => {
+    assert(esmContent.includes('16777216') || esmContent.includes('16_777_216'), 'Missing iOS canvas limit');
+});
+
+test('Bundle has getSafeCanvasSize function', () => {
+    assert(esmContent.includes('getSafeCanvasSize') || esmContent.includes('SafeCanvas'), 'Missing canvas size guard');
+});
+
+test('Bundle logs warning for oversized images', () => {
+    assert(esmContent.includes('exceeds iOS Safari canvas limit') || esmContent.includes('Auto-downscaled'), 'Missing downscale warning');
+});
+
+// Fix #6: Memory Cleanup
+test('Bundle has releaseCanvas function', () => {
+    assert(esmContent.includes('releaseCanvas'), 'Missing releaseCanvas memory cleanup');
+});
+
+test('Bundle calls releaseCanvas after export', () => {
+    assert(esmContent.includes('releaseCanvas(canvas)'), 'releaseCanvas not called after export');
+});
+
+// Fix #7: Multiline Text
+test('Bundle handles multiline text (split \\n)', () => {
+    assert(esmContent.includes("split('\\n')") || esmContent.includes('split("\\n")'), 'Missing multiline text split');
+});
+
+test('Types include lineHeight option', () => {
+    const typesDts = readFileSync(join(rootDir, 'dist', 'types.d.ts'), 'utf8');
+    assert(typesDts.includes('lineHeight'), 'Missing lineHeight in type declarations');
+});
+
+// Fix #8: SSR Guard
+test('Bundle has SSR/Node.js guard', () => {
+    assert(esmContent.includes("typeof document") || esmContent.includes("typeof HTMLCanvasElement"), 'Missing SSR guard');
+});
+
+test('SSR guard error message is helpful', () => {
+    assert(esmContent.includes('browser environment') || esmContent.includes('Cannot run in Node'), 'SSR error not helpful');
+});
+
+// Fix #9: EXIF Documentation
+test('README documents EXIF data loss', () => {
+    assert(readme.includes('EXIF'), 'Missing EXIF warning in README');
+});
+
+test('README documents iOS Safari limit', () => {
+    assert(readme.includes('16.7 megapixels') || readme.includes('iOS Safari'), 'Missing iOS Safari note in README');
+});
+
+// Fix #10: Better Error Messages
+test('canvasToBlob error includes MIME type', () => {
+    assert(esmContent.includes('Canvas export failed for type'), 'Missing detailed toBlob error');
+});
+
+test('canvasToBlob error includes canvas dimensions', () => {
+    assert(esmContent.includes('canvas size:') || esmContent.includes('canvas.width'), 'Missing canvas dimensions in error');
+});
+
 // ============================================================
 console.log('\n' + '='.repeat(50));
 console.log(`\n📊 Results: ${passed} passed, ${failed} failed, ${passed + failed} total`);

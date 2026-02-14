@@ -1,7 +1,9 @@
 /**
  * @miconvert/image-watermark
- * Text watermark renderer — handles fonts, stroke, shadow, and responsive scaling.
- * Automatically loads the correct font for the text's language/script.
+ * Text watermark renderer — handles fonts, stroke, shadow, responsive scaling,
+ * and multiline text (canvas fillText ignores \n by default).
+ *
+ * @see https://github.com/brianium/watermarkjs/issues/65 (multiline bug)
  */
 
 import { TextWatermarkOptions } from './types';
@@ -10,7 +12,31 @@ import { calculatePosition } from './position';
 import { ensureFontForText } from './font-loader';
 
 /**
+ * Draw a single line of text with stroke and fill.
+ */
+function drawTextLine(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    strokeColor?: string,
+    strokeWidth = 2
+): void {
+    // Stroke (outline) — drawn first so fill sits on top
+    if (strokeColor) {
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = strokeWidth;
+        ctx.lineJoin = 'round';
+        ctx.strokeText(text, x, y);
+    }
+
+    // Fill
+    ctx.fillText(text, x, y);
+}
+
+/**
  * Measure and draw a text watermark at the specified position on the canvas.
+ * Supports multiline text (split by \n).
  * Automatically detects the text script and loads a matching Google Noto font.
  */
 export async function drawTextWatermark(
@@ -38,6 +64,7 @@ export async function drawTextWatermark(
         opacity = 1,
         rotate = 0,
         scale,
+        lineHeight: customLineHeight,
     } = options;
 
     // Auto-load the best font for the text's language
@@ -56,17 +83,24 @@ export async function drawTextWatermark(
     // Set font
     ctx.font = `${fontStyle} ${fontWeight} ${scaledFontSize}px ${resolvedFontFamily}`;
 
-    // Measure text
-    const metrics = ctx.measureText(text);
-    const textWidth = metrics.width;
-    const textHeight = scaledFontSize;
+    // Handle multiline text — canvas fillText() ignores \n
+    const lines = text.split('\n');
+    const lineH = customLineHeight ?? scaledFontSize * 1.3;
 
-    // Calculate position
+    // Measure the bounding box of all lines
+    let maxLineWidth = 0;
+    for (const line of lines) {
+        const metrics = ctx.measureText(line);
+        if (metrics.width > maxLineWidth) maxLineWidth = metrics.width;
+    }
+    const totalHeight = lineH * lines.length;
+
+    // Calculate position using the full bounding box
     const { x, y } = calculatePosition(
         canvas.width,
         canvas.height,
-        textWidth,
-        textHeight,
+        maxLineWidth,
+        totalHeight,
         position,
         padding,
         offsetX,
@@ -74,8 +108,8 @@ export async function drawTextWatermark(
     );
 
     // Center point for rotation
-    const cx = x + textWidth / 2;
-    const cy = y + textHeight / 2;
+    const cx = x + maxLineWidth / 2;
+    const cy = y + totalHeight / 2;
 
     // Apply transforms
     ctx.globalAlpha = opacity;
@@ -91,17 +125,13 @@ export async function drawTextWatermark(
     ctx.shadowOffsetX = shadowOffsetX;
     ctx.shadowOffsetY = shadowOffsetY;
 
-    // Stroke (outline) — drawn first so fill sits on top
-    if (strokeColor) {
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = strokeWidth;
-        ctx.lineJoin = 'round';
-        ctx.strokeText(text, x, y + textHeight * 0.85);
-    }
-
-    // Fill
+    // Draw each line
     ctx.fillStyle = color;
-    ctx.fillText(text, x, y + textHeight * 0.85);
+    ctx.textBaseline = 'top';
+    for (let i = 0; i < lines.length; i++) {
+        const lineY = y + i * lineH;
+        drawTextLine(ctx, lines[i], x, lineY, strokeColor, strokeWidth);
+    }
 
     ctx.restore();
 }
@@ -119,7 +149,12 @@ export function measureText(
 ): { width: number; height: number } {
     ctx.save();
     ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
-    const metrics = ctx.measureText(text);
+    const lines = text.split('\n');
+    let maxWidth = 0;
+    for (const line of lines) {
+        const metrics = ctx.measureText(line);
+        if (metrics.width > maxWidth) maxWidth = metrics.width;
+    }
     ctx.restore();
-    return { width: metrics.width, height: fontSize };
+    return { width: maxWidth, height: fontSize * 1.3 * lines.length };
 }

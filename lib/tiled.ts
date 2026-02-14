@@ -55,10 +55,18 @@ export async function drawTiledText(
     ctx.font = `${fontStyle} ${fontWeight} ${scaledFontSize}px ${resolvedFontFamily}`;
     ctx.globalAlpha = opacity;
 
-    // Measure one tile
-    const metrics = ctx.measureText(text);
-    const tileW = metrics.width + scaledSpacingX;
-    const tileH = scaledFontSize + scaledSpacingY;
+    // Handle multiline text — canvas fillText() ignores \n
+    const lines = text.split('\n');
+    const lineH = scaledFontSize * 1.3;
+
+    // Measure widest line for tile width
+    let maxLineWidth = 0;
+    for (const line of lines) {
+        const w = ctx.measureText(line).width;
+        if (w > maxLineWidth) maxLineWidth = w;
+    }
+    const tileW = maxLineWidth + scaledSpacingX;
+    const tileH = lineH * lines.length + scaledSpacingY;
 
     // Shadow
     ctx.shadowColor = shadowColor;
@@ -81,19 +89,25 @@ export async function drawTiledText(
     ctx.rotate(degreesToRadians(rotate));
     ctx.translate(-centerX, -centerY);
 
+    ctx.textBaseline = 'top';
+
     for (let y = startY; y < endY; y += tileH) {
         for (let x = startX; x < endX; x += tileW) {
-            // Stroke
-            if (strokeColor) {
-                ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = strokeWidth;
-                ctx.lineJoin = 'round';
-                ctx.strokeText(text, x, y + scaledFontSize * 0.85);
-            }
+            for (let i = 0; i < lines.length; i++) {
+                const lineY = y + i * lineH;
 
-            // Fill
-            ctx.fillStyle = color;
-            ctx.fillText(text, x, y + scaledFontSize * 0.85);
+                // Stroke
+                if (strokeColor) {
+                    ctx.strokeStyle = strokeColor;
+                    ctx.lineWidth = strokeWidth;
+                    ctx.lineJoin = 'round';
+                    ctx.strokeText(lines[i], x, lineY);
+                }
+
+                // Fill
+                ctx.fillStyle = color;
+                ctx.fillText(lines[i], x, lineY);
+            }
         }
     }
 

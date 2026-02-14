@@ -38,7 +38,7 @@
  */
 
 import { WatermarkOptions, TextWatermarkOptions, ImageWatermarkOptions } from './types';
-import { fileToCanvas, canvasToBlob } from './utils';
+import { fileToCanvas, canvasToBlob, releaseCanvas } from './utils';
 import { drawTextWatermark } from './text-watermark';
 import { drawImageWatermark } from './image-watermark';
 import { drawTiledText, drawTiledImage } from './tiled';
@@ -60,6 +60,14 @@ export async function addWatermark(
 
     if (!(file instanceof Blob)) {
         throw new Error('[miconvert] Source must be a File or Blob object.');
+    }
+
+    // SSR guard — ensure browser environment
+    if (typeof document === 'undefined' || typeof HTMLCanvasElement === 'undefined') {
+        throw new Error(
+            '[miconvert] This library requires a browser environment with Canvas support. ' +
+            'It cannot run in Node.js or SSR. Use dynamic import() or check typeof window before importing.'
+        );
     }
 
     // Load source image onto canvas
@@ -99,11 +107,17 @@ export async function addWatermark(
         );
     }
 
-    // Determine output format
+    // Determine output format — preserve input MIME type (avoid PNG-only bug)
     const outputType = options.outputType || (file as File).type || 'image/png';
     const outputQuality = options.outputQuality ?? 0.92;
 
-    return canvasToBlob(canvas, outputType, outputQuality);
+    const result = await canvasToBlob(canvas, outputType, outputQuality);
+
+    // Release canvas memory to prevent Safari memory hoarding.
+    // Without this, batch processing will accumulate ~384MB and crash.
+    releaseCanvas(canvas);
+
+    return result;
 }
 
 // Re-export types for consumers
