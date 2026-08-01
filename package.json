@@ -1,6 +1,6 @@
 {
   "name": "@miconvert/image-watermark",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Add text or logo watermark to images in the browser. Client-side, fast, beautiful — no server needed. Supports tiled patterns, 9-point positioning, responsive scaling, and full opacity/rotation control.",
   "main": "dist/image-watermark.js",
   "module": "dist/image-watermark.mjs",
