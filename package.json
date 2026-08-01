@@ -35,9 +35,9 @@
     "type": "git",
     "url": "https://github.com/huuhuybn/miconvert-image-watermark.git"
   },
-  "homepage": "https://miconvert.com",
+  "homepage": "https://miconvert.com?utm_source=npm&utm_medium=listing&utm_campaign=image-watermark",
   "bugs": {
-    "url": "https://miconvert.com/en/contact"
+    "url": "https://miconvert.com/en/contact?utm_source=npm&utm_medium=listing&utm_campaign=image-watermark"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.0",

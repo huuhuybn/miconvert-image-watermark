@@ -187,8 +187,8 @@ Chrome 50+, Firefox 19+, Safari 11+, Edge 79+
 
 ## 🤝 Support
 
-For bug reports and feature requests, please visit [miconvert.com/en/contact](https://miconvert.com/en/contact).
+For bug reports and feature requests, please visit [miconvert.com/en/contact](https://miconvert.com/en/contact?utm_source=npm&utm_medium=readme&utm_campaign=image-watermark).
 
 ## 📄 License
 
-[MIT](./LICENSE) © [Miconvert](https://miconvert.com)
+[MIT](./LICENSE) © [Miconvert](https://miconvert.com?utm_source=npm&utm_medium=readme&utm_campaign=image-watermark)
