@@ -1,0 +1,10 @@
+{
+  "name": "@miconvert/image-watermark",
+  "version": "1.0.2",
+  "license": "MIT",
+  "description": "Add text or image watermarks to images in the browser — tiled patterns, positioning, opacity, rotation and Google Font loading, on canvas with no upload.",
+  "exports": "./lib/index.ts",
+  "compilerOptions": {
+    "lib": ["es2018", "dom", "dom.iterable"]
+  }
+}
